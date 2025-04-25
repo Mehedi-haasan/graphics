@@ -4,8 +4,6 @@ const cors = require('cors');
 const multer = require('multer');
 const sharp = require('sharp');
 const fs = require('fs');
-const path = require('path');
-
 const app = express();
 const port = 8050;
 
@@ -23,17 +21,6 @@ const storage = multer.diskStorage({
     }
 });
 
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const mimeType = allowedTypes.test(file.mimetype);
-    const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-
-    if (mimeType && extName) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Only images are allowed'));
-    }
-};
 
 const upload = multer({ storage });
 
@@ -53,7 +40,7 @@ app.post("/api/upload/image", upload.single('image_url'), async (req, res) => {
 
         // Compress image using sharp
         await sharp(originalPath)
-            .jpeg({ quality: 70 }) // Adjust quality here (e.g., 60–80)
+            .jpeg({ quality: 70 }) 
             .toFile(compressedPath);
 
         // Delete original uncompressed file
