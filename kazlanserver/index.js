@@ -9,9 +9,15 @@ const port = 8050;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// use for restric access  
 app.use(cors());
+
+// use for file access bia url
 app.use('/uploads', express.static('uploads'));
 
+
+// declare storage and file upload destination
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
@@ -24,6 +30,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
+// making Post request to upload image
 app.post("/api/upload/image", upload.single('image_url'), async (req, res) => {
     try {
         const image_url = req.file;
@@ -40,15 +48,20 @@ app.post("/api/upload/image", upload.single('image_url'), async (req, res) => {
 
         // Compress image using sharp
         await sharp(originalPath)
-            .jpeg({ quality: 70 }) 
+            .jpeg({ quality: 70 })
             .toFile(compressedPath);
 
         // Delete original uncompressed file
         fs.unlinkSync(originalPath);
 
+        // Get compressed file size
+        const stats = fs.statSync(compressedPath);
+        const sizeInKB = (stats.size / 1024).toFixed(2); // Size in KB
+
         res.status(200).send({
             success: true,
-            image_url: `http://localhost:8050/${compressedPath.replace(/\\/g, '/')}`
+            image_url: `http://localhost:8050/${compressedPath.replace(/\\/g, '/')}`,
+            size_kb: sizeInKB
         });
 
     } catch (error) {
